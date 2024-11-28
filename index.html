@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brawl Stars Trophy Comparison</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+    h1 {
+      background-color: #0a74da;
+      color: white;
+      padding: 20px 0;
+    }
+    form {
+      margin: 20px auto;
+      padding: 10px;
+      max-width: 400px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    label, input, button {
+      display: block;
+      margin: 10px auto;
+      width: 80%;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #0a74da;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #084a9c;
+    }
+    #result {
+      margin: 20px auto;
+      padding: 10px;
+      max-width: 400px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Brawl Stars Trophy Comparison</h1>
+  <form id="compare-form">
+    <label for="tag1">Player 1 Tag:</label>
+    <input type="text" id="tag1" placeholder="Default: #RCGUV2V">
+    <label for="tag2">Player 2 Tag:</label>
+    <input type="text" id="tag2" placeholder="Default: #2L9LGJRLQ8">
+    <button type="submit">Compare</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const fetchPlayerData = async (playerTag) => {
+      // 프록시 서버의 URL로 요청을 보냄
+      const url = `http://localhost:3000/player/${playerTag}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error(error);
+        return null;
+      }
+    };
+
+    document.getElementById('compare-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // 기본값 설정
+      const defaultTag1 = "RCGUV2V";
+      const defaultTag2 = "2L9LGJRLQ8";
+
+      const tag1 = document.getElementById('tag1').value.trim() || defaultTag1;
+      const tag2 = document.getElementById('tag2').value.trim() || defaultTag2;
+      const resultDiv = document.getElementById('result');
+
+      resultDiv.textContent = "Loading...";
+      const player1 = await fetchPlayerData(tag1.replace('#', ''));
+      const player2 = await fetchPlayerData(tag2.replace('#', ''));
+
+      if (player1 && player2) {
+        const trophies1 = player1.trophies;
+        const trophies2 = player2.trophies;
+
+        resultDiv.innerHTML = `
+          <p><strong>${player1.name}</strong> has ${trophies1} trophies.</p>
+          <p><strong>${player2.name}</strong> has ${trophies2} trophies.</p>
+          <p>
+            ${
+              trophies1 > trophies2
+                ? `<strong>${player1.name}</strong> has more trophies.`
+                : trophies1 < trophies2
+                ? `<strong>${player2.name}</strong> has more trophies.`
+                : "Both players have the same number of trophies."
+            }
+          </p>
+        `;
+      } else {
+        resultDiv.textContent = "Failed to fetch player data. Please check the tags.";
+      }
+    });
+  </script>
+</body>
+</html>
